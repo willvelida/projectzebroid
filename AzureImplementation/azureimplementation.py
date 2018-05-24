@@ -20,6 +20,7 @@ soundFile = 'bush-clinton_debate_waffle.wav'
 textAnalyticsURI = 'australiaeast.api.cognitive.microsoft.com'
 textKey = '82f1c2b1358c48c28b599afd04866914'
 text_file = "Output.txt"
+normalized_file = "NormalizedText.txt"
 transcriptTxt = ""
 
 # Transcribe the audio
@@ -51,10 +52,18 @@ def normalize_text(text_file):
     transcriptTxt = ''.join(c for c in transcriptTxt if not c in punctuation).lower()
 
     # print normalized text
-    print('NORMALIZED TEXT:' + transcriptTxt)
-    return transcriptTxt
+    print('NORMALIZED TEXT:') 
+    with open("NormalizedText.txt","w") as normalize_text:
+        normalize_text.write(transcriptTxt)
+    print(transcriptTxt)
+    return normalize_text
+    
 
-def key_phrases(transcriptTxt):
+def key_phrases(normalize_text):
+
+    phrases = open(normalize_text, "r")
+    phrasesTxt = phrases.read()
+
     headers = {
         'Content-type': 'application/json',
         'Ocp-Apim-Subscription-Key': textKey,
@@ -68,7 +77,7 @@ def key_phrases(transcriptTxt):
             {
                 "language": "en",
                 "id": "1",
-                "text": transcriptTxt
+                "text": phrasesTxt
             }  
         ]
     }
@@ -80,8 +89,6 @@ def key_phrases(transcriptTxt):
         data = response.read()
 
         parsed = json.loads(data.decode('utf-8'))
-        # TODO: Document not getting read
-        print(parsed)
         for document in parsed['documents']:
             print("Document " + document["id"] + " key phrases: ")
             for phrase in document['keyPhrases']:
@@ -95,7 +102,7 @@ def key_phrases(transcriptTxt):
 def main():
     transcribe_audio(soundFile)
     normalize_text(text_file)
-    key_phrases(transcriptTxt)
+    key_phrases(normalized_file)
 
 if __name__ == "__main__":
     main()

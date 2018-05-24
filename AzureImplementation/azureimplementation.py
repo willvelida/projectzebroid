@@ -88,12 +88,14 @@ def key_phrases(normalize_text):
         conn.request("POST", '/text/analytics/v2.0/keyPhrases?%s' % params, str(body), headers)
         response = conn.getresponse()
         data = response.read()
+        phrases_file = open("Phrases.txt","w")
 
         parsed = json.loads(data.decode('utf-8'))
         for document in parsed['documents']:
             print("Document " + document["id"] + " key phrases: ")
             for phrase in document['keyPhrases']:
-                print(" " + phrase)
+                phrases_file.write("%s\n" % phrase)
+                print(" " + phrase)                
             print("-----------------------")
         conn.close()
     except Exception as e:

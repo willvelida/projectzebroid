@@ -130,11 +130,16 @@ def get_sentiment(normalize_text):
         data = response.read()
         parsed = json.loads(data.decode('utf-8'))
         for document in parsed['documents']:
-            sentiment = "negative"
+            sentiment = ""
             if document["score"] >= 0.5:
                 sentiment = "positive"
+            else:
+                sentiment = "negative"
             print("Conversation " + document["id"] + ": = " + sentiment)
             print("Score: " + str(document["score"]))
+            with open("SentimentScore.txt", "w") as sentiment_file:
+                sentiment_file.write(document["id"] + ": = " + sentiment + "\n")
+                sentiment_file.write("Score: " + str(document["score"]))
         conn.close()
     except Exception as e:
         print(e)

@@ -54,5 +54,50 @@ def normalize_text(text_file):
     print('NORMALIZED TEXT:' + transcriptTxt)
     return transcriptTxt
 
-transcribe_audio(soundFile)
-normalize_text(text_file)
+def key_phrases(transcriptTxt):
+    headers = {
+        'Content-type': 'application/json',
+        'Ocp-Apim-Subscription-Key': textKey,
+        'Accept': 'application/json'
+    }
+
+    params = urllib.parse.urlencode({})
+
+    body = {
+        "documents": [
+            {
+                "language": "en",
+                "id": "1",
+                "text": transcriptTxt
+            }  
+        ]
+    }
+
+    try:
+        conn = http.client.HTTPSConnection(textAnalyticsURI)
+        conn.request("POST", '/text/analytics/v2.0/keyPhrases?%s' % params, str(body), headers)
+        response = conn.getresponse()
+        data = response.read()
+
+        parsed = json.loads(data.decode('utf-8'))
+        # TODO: Document not getting read
+        print(parsed)
+        for document in parsed['documents']:
+            print("Document " + document["id"] + " key phrases: ")
+            for phrase in document['keyPhrases']:
+                print(" " + phrase)
+            print("-----------------------")
+        conn.close()
+    except Exception as e:
+        print('Error:')
+        print(e)
+
+def main():
+    transcribe_audio(soundFile)
+    normalize_text(text_file)
+    key_phrases(transcriptTxt)
+
+if __name__ == "__main__":
+    main()
+
+

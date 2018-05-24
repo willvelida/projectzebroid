@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import math
 import http.client, urllib.request, urllib.parse, urllib.error, base64, json, urllib
 import speech_recognition as sr
+import numpy as np
 
 from io import BytesIO
 from nltk.probability import FreqDist
@@ -58,6 +59,24 @@ def normalize_text(text_file):
         normalize_text.write(transcriptTxt)
     print(transcriptTxt)
     return normalize_text
+
+# Get Frequency Distribution of words
+def get_frequency_distribution(normalize_text):
+    # Open and read the file
+    freqWords = open(normalize_text, "r")
+    freqWordstTxt = freqWords.read()
+    freqWords_file = open("FreqWords.txt", "w")
+
+    # Removes stop words
+    freqWordstTxt = ' '.join([word for word in freqWordstTxt.split() if word not in (stopwords.words('english'))])
+
+    words = nltk.tokenize.word_tokenize(freqWordstTxt)
+    fdist = FreqDist(words)
+    count_frame = pd.DataFrame(fdist, index=[0]).T
+    count_frame.columns = ['Count']
+    # TODO: Fix, only prints the count of words
+    count_frame.to_csv(freqWords_file, header=None, index=['Count'], sep=' ', mode='a')
+    
     
 # Extract key phrases from the document
 def key_phrases(normalize_text):
@@ -149,6 +168,7 @@ def get_sentiment(normalize_text):
 def main():
     transcribe_audio(soundFile)
     normalize_text(text_file)
+    get_frequency_distribution(normalized_file)
     key_phrases(normalized_file)
     get_sentiment(normalized_file)
 

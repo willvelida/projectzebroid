@@ -21,6 +21,7 @@ textAnalyticsURI = 'australiaeast.api.cognitive.microsoft.com'
 textKey = '82f1c2b1358c48c28b599afd04866914'
 text_file = "Output.txt"
 normalized_file = "NormalizedText.txt"
+phrases_file = "Phrases.txt"
 transcriptTxt = ""
 
 # Transcribe the audio
@@ -58,7 +59,7 @@ def normalize_text(text_file):
     print(transcriptTxt)
     return normalize_text
     
-
+# Extract key phrases from the document
 def key_phrases(normalize_text):
 
     phrases = open(normalize_text, "r")
@@ -99,10 +100,50 @@ def key_phrases(normalize_text):
         print('Error:')
         print(e)
 
+def get_sentiment(normalize_text):
+    # Read the file
+    sentiment = open(normalize_text, 'r')
+    sentimentTxt = sentiment.read()
+    # Analyse the text
+    headers = {
+        'Content-type': 'application/json',
+        'Ocp-Apim-Subscription-Key': textKey,
+        'Accept': 'application/json'
+    }
+
+    params = urllib.parse.urlencode({})
+
+    body = {
+        "documents": [
+            {
+                "language": "en",
+                "id": "1",
+                "text": sentimentTxt
+            }  
+        ]
+    }
+
+    try:
+        conn = http.client.HTTPSConnection(textAnalyticsURI)
+        conn.request("POST", "/text/analytics/v2.0/sentiment?%s" % params, str(body), headers)
+        response = conn.getresponse()
+        data = response.read()
+        parsed = json.loads(data.decode('utf-8'))
+        for document in parsed['documents']:
+            sentiment = "negative"
+            if document["score"] >= 0.5:
+                sentiment = "positive"
+            print("Conversation " + document["id"] + ": = " + sentiment)
+            print("Score: " + str(document["score"]))
+        conn.close()
+    except Exception as e:
+        print(e)
+
 def main():
     transcribe_audio(soundFile)
     normalize_text(text_file)
     key_phrases(normalized_file)
+    get_sentiment(normalized_file)
 
 if __name__ == "__main__":
     main()
